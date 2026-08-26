@@ -135,11 +135,15 @@ jobs:
           }
 
           $lenOffset = $data.Length - 20
+
           $mshLen =
-            ($data[$lenOffset]     -shl 24) -bor
-            ($data[$lenOffset + 1] -shl 16) -bor
-            ($data[$lenOffset + 2] -shl 8)  -bor
-            $data[$lenOffset + 3]
+            ([int]$data[$lenOffset]     -shl 24) -bor
+            ([int]$data[$lenOffset + 1] -shl 16) -bor
+            ([int]$data[$lenOffset + 2] -shl 8)  -bor
+            ([int]$data[$lenOffset + 3])
+
+          Write-Host "Embedded MSH length: $mshLen"
+          Write-Host "Source MSH length:   $($sourceMsh.Length)"
 
           if ($mshLen -ne $sourceMsh.Length) {
             throw "Embedded MSH length mismatch: embedded=$mshLen source=$($sourceMsh.Length)"
