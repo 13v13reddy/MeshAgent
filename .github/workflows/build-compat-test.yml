@@ -23,11 +23,13 @@ jobs:
           $hash = git rev-parse HEAD
           $date = git show -s --format=%ci HEAD
 
-          @"
-	  // This file is auto-generated, any edits may be overwritten
-	  #define SOURCE_COMMIT_DATE "$date"
- 	  #define SOURCE_COMMIT_HASH "$hash"
-	  "@ | Set-Content -Encoding ASCII microscript/ILibDuktape_Commit.h
+          $lines= (
+	  '// This file is auto-generated, any edits may be overwritten'
+	  "#define SOURCE_COMMIT_DATE "$date""
+ 	  "#define SOURCE_COMMIT_HASH "$hash""
+	  )
+	  
+	  $lines | Set-Content -Encoding ASCII microscript/ILibDuktape_Commit.h
 
           Write-Host "Generated microscript/ILibDuktape_Commit.h"
           Get-Content microscript/ILibDuktape_Commit.h
