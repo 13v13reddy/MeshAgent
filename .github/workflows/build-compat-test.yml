@@ -56,11 +56,33 @@ jobs:
         run: |
           $dll = Resolve-Path "meshservice\x64\StealthLab_DLL\MeshService-2022.dll"
 
-          dumpbin /exports $dll |
-            Select-String "MeshUmhHostW"
+          $vsPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" `
+            -latest `
+            -products * `
+            -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
+            -property installationPath
 
-          if ($LASTEXITCODE -ne 0) {
-            throw "dumpbin failed"
+          if (-not $vsPath) {
+            throw "Visual Studio C++ tools not found"
+          }
+
+          $dumpbin = Get-ChildItem `
+            "$vsPath\VC\Tools\MSVC\*\bin\Hostx64\x64\dumpbin.exe" |
+            Sort-Object FullName -Descending |
+            Select-Object -First 1
+
+          if (-not $dumpbin) {
+            throw "dumpbin.exe not found"
+          }
+
+          Write-Host "Using dumpbin: $($dumpbin.FullName)"
+
+          $exports = & $dumpbin.FullName /exports $dll
+
+          $exports | Select-String "MeshUmhHostW"
+
+          if (-not ($exports | Select-String "MeshUmhHostW" -Quiet)) {
+            throw "MeshUmhHostW export not found"
           }
 
       - name: Stage artifacts
