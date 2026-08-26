@@ -33,23 +33,11 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      - name: Build x64 service DLL
+      - name: Build matching Windows x64 package
         shell: pwsh
         run: |
-          msbuild meshservice/MeshService-2022.vcxproj `
-            /p:Configuration=Release_DLL `
-            /p:Platform=x64 `
-            /p:WindowsTargetPlatformVersion=10.0 `
-            /m `
-            /nologo `
-            /verbosity:minimal
-
-      - name: Build x64 agent
-        shell: pwsh
-        run: |
-          msbuild meshservice/MeshService-2022.vcxproj `
-            /p:Configuration=Release `
-            /p:Platform=x64 `
+          msbuild MeshAgent.Build.proj `
+            /t:BuildStealthLabX64 `
             /p:WindowsTargetPlatformVersion=10.0 `
             /m `
             /nologo `
