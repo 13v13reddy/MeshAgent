@@ -43,7 +43,7 @@ jobs:
             /nologo `
             /verbosity:minimal
 
-            - name: Show outputs
+      - name: Show outputs
         shell: pwsh
         run: |
           Get-Item `
