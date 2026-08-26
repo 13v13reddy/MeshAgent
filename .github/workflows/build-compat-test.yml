@@ -39,13 +39,15 @@ jobs:
             throw "MESH_AGENT_MSH_B64 secret is missing"
           }
 
-          $bytes = [Convert]::FromBase64String($env:MESH_AGENT_MSH_B64)
+          $b64 = ($env:MESH_AGENT_MSH_B64 -replace '\s','').Trim()
+          $bytes = [Convert]::FromBase64String($b64)
+
           [IO.File]::WriteAllBytes(
             (Join-Path $PWD 'MeshAgent.msh'),
             $bytes
           )
 
-          Write-Host "Restored MeshAgent.msh"
+          Get-FileHash .\MeshAgent.msh -Algorithm SHA256
           Get-Item .\MeshAgent.msh | Select-Object FullName, Length
 
       - name: Setup MSBuild
