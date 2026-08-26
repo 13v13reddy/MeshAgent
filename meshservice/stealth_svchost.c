@@ -1319,6 +1319,14 @@ g_SvchostAgent = MeshAgent_Create(
     MeshCommand_AuthInfo_CapabilitiesMask_FILES
 );
 
+if (g_SvchostAgent != NULL)
+{
+    Stealth_SvchostLogLine(
+        L"MeshAgent_Create capabilities=%d (0x%X)",
+        g_SvchostAgent->capabilities,
+        g_SvchostAgent->capabilities
+    );
+}
     if (!g_SvchostAgent)
     {
         Stealth_DebugPrintfA("MeshAgent_Create failed in svchost service main");
