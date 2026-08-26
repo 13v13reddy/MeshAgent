@@ -22,18 +22,14 @@ jobs:
         run: |
           $hash = git rev-parse HEAD
           $date = git show -s --format=%ci HEAD
-
-          $lines= (
-	  '// This file is auto-generated, any edits may be overwritten'
-	  "#define SOURCE_COMMIT_DATE "$date""
- 	  "#define SOURCE_COMMIT_HASH "$hash""
-	  )
-	  
-	  $lines | Set-Content -Encoding ASCII microscript/ILibDuktape_Commit.h
-
-          Write-Host "Generated microscript/ILibDuktape_Commit.h"
+          $lines = @(
+            '// This file is auto-generated, any edits may be overwritten'
+            ('#define SOURCE_COMMIT_DATE "{0}"' -f $date)
+            ('#define SOURCE_COMMIT_HASH "{0}"' -f $hash)
+          )
+          $lines | Set-Content -Encoding ASCII microscript/ILibDuktape_Commit.h
           Get-Content microscript/ILibDuktape_Commit.h
-      
+
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
