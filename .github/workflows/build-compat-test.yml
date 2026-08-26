@@ -1,0 +1,83 @@
+name: Windows Compatibility Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build x64 service DLL
+        shell: pwsh
+        run: |
+          msbuild meshservice/MeshService-2022.vcxproj `
+            /p:Configuration=Release_DLL `
+            /p:Platform=x64 `
+            /m `
+            /nologo `
+            /verbosity:minimal
+
+      - name: Build x64 agent
+        shell: pwsh
+        run: |
+          msbuild meshservice/MeshService-2022.vcxproj `
+            /p:Configuration=Release `
+            /p:Platform=x64 `
+            /m `
+            /nologo `
+            /verbosity:minimal
+
+      - name: Show outputs
+        shell: pwsh
+        run: |
+          Get-ChildItem -Recurse -Include `
+            MeshService64.exe,MeshServiceHost64.dll |
+            Select-Object FullName,Length,LastWriteTime
+
+      - name: Verify MeshUmhHostW export
+        shell: pwsh
+        run: |
+          $dll = Get-ChildItem -Recurse -Filter MeshServiceHost64.dll |
+            Select-Object -First 1
+
+          if (-not $dll) {
+            throw "MeshServiceHost64.dll not found"
+          }
+
+          dumpbin /exports $dll.FullName |
+            Select-String "MeshUmhHostW"
+
+      - name: Stage artifacts
+        shell: pwsh
+        run: |
+          New-Item artifacts -ItemType Directory -Force | Out-Null
+
+          $exe = Get-ChildItem -Recurse -Filter MeshService64.exe |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+
+          $dll = Get-ChildItem -Recurse -Filter MeshServiceHost64.dll |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+
+          Copy-Item $exe.FullName artifacts/MeshService64.exe
+          Copy-Item $dll.FullName artifacts/MeshServiceHost64.dll
+
+          Get-FileHash artifacts/* -Algorithm SHA256
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: meshagent-compat-${{ github.sha }}
+          path: artifacts/
+          retention-days: 7
