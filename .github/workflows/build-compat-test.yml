@@ -1,7 +1,7 @@
 name: Windows Compatibility Build
 
 on:
- push:
+  push:
     branches:
       - compat-build-test
   workflow_dispatch:
