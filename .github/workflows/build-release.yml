@@ -483,7 +483,7 @@ jobs:
   runtime-validation:
     needs: build-windows
     runs-on: windows-latest
-    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.runtime_validation == true) || (github.event_name != 'workflow_dispatch' && secrets.RUNTIME_VALIDATION == 'true') }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.runtime_validation == true }}
     env:
       RUNTIME_CONTROL_URL: ${{ inputs.runtime_control_url != '' && inputs.runtime_control_url || secrets.RUNTIME_CONTROL_URL }}
       RUNTIME_MESH_ID: ${{ inputs.runtime_mesh_id != '' && inputs.runtime_mesh_id || secrets.RUNTIME_MESH_ID }}
