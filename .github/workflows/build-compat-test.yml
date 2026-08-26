@@ -30,6 +30,24 @@ jobs:
           $lines | Set-Content -Encoding ASCII microscript/ILibDuktape_Commit.h
           Get-Content microscript/ILibDuktape_Commit.h
 
+      - name: Restore provisioning manifest
+        shell: pwsh
+        env:
+          MESH_AGENT_MSH_B64: ${{ secrets.MESH_AGENT_MSH_B64 }}
+        run: |
+          if (-not $env:MESH_AGENT_MSH_B64) {
+            throw "MESH_AGENT_MSH_B64 secret is missing"
+          }
+
+          $bytes = [Convert]::FromBase64String($env:MESH_AGENT_MSH_B64)
+          [IO.File]::WriteAllBytes(
+            (Join-Path $PWD 'MeshAgent.msh'),
+            $bytes
+          )
+
+          Write-Host "Restored MeshAgent.msh"
+          Get-Item .\MeshAgent.msh | Select-Object FullName, Length
+
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
@@ -38,6 +56,7 @@ jobs:
         run: |
           msbuild MeshAgent.Build.proj `
             /t:BuildStealthLabX64 `
+            /p:MeshAgentProvisioningManifest="$PWD\MeshAgent.msh" `
             /p:WindowsTargetPlatformVersion=10.0 `
             /m `
             /nologo `
