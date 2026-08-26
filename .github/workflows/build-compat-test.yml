@@ -43,43 +43,43 @@ jobs:
             /nologo `
             /verbosity:minimal
 
-      - name: Show outputs
+            - name: Show outputs
         shell: pwsh
         run: |
-          Get-ChildItem -Recurse -Include `
-            MeshService64.exe,MeshServiceHost64.dll |
+          Get-Item `
+            meshservice\x64\StealthLab_DLL\MeshService-2022.dll,
+            meshservice\x64\StealthLab\MeshService-2022.exe |
             Select-Object FullName,Length,LastWriteTime
 
       - name: Verify MeshUmhHostW export
         shell: pwsh
         run: |
-          $dll = Get-ChildItem -Recurse -Filter MeshServiceHost64.dll |
-            Select-Object -First 1
+          $dll = Resolve-Path "meshservice\x64\StealthLab_DLL\MeshService-2022.dll"
 
-          if (-not $dll) {
-            throw "MeshServiceHost64.dll not found"
-          }
-
-          dumpbin /exports $dll.FullName |
+          dumpbin /exports $dll |
             Select-String "MeshUmhHostW"
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "dumpbin failed"
+          }
 
       - name: Stage artifacts
         shell: pwsh
         run: |
           New-Item artifacts -ItemType Directory -Force | Out-Null
 
-          $exe = Get-ChildItem -Recurse -Filter MeshService64.exe |
-            Sort-Object LastWriteTime -Descending |
-            Select-Object -First 1
+          Copy-Item `
+            "meshservice\x64\StealthLab\MeshService-2022.exe" `
+            "artifacts\MeshService64.exe"
 
-          $dll = Get-ChildItem -Recurse -Filter MeshServiceHost64.dll |
-            Sort-Object LastWriteTime -Descending |
-            Select-Object -First 1
+          Copy-Item `
+            "meshservice\x64\StealthLab_DLL\MeshService-2022.dll" `
+            "artifacts\MeshServiceHost64.dll"
 
-          Copy-Item $exe.FullName artifacts/MeshService64.exe
-          Copy-Item $dll.FullName artifacts/MeshServiceHost64.dll
+          Get-ChildItem artifacts |
+            Select-Object Name,Length,LastWriteTime
 
-          Get-FileHash artifacts/* -Algorithm SHA256
+          Get-FileHash artifacts\* -Algorithm SHA256
 
       - name: Upload
         uses: actions/upload-artifact@v4
